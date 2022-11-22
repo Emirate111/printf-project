@@ -1,66 +1,37 @@
 #include "main.h"
 
-void print_buffer(char buffer[], int *buff_ind);
-
 /**
- * _printf - Printf function
- * @format: format.
- * Return: Printed chars.
+ * _printf - prints characters to the output screen according to the format
+ * specifier
+ * @format: an argument of all the desired characters
+ * Return: a total count of characters printed
  */
+
 int _printf(const char *format, ...)
 {
-	int i, printed = 0, printed_chars = 0;
-	int flags, width, precision, size, buff_ind = 0;
-	va_list list;
-	char buffer[BUFF_SIZE];
+int print_count;
+conv_f func[] = {
+{"c", printf_char},
+{"s", printf_string},
+{"%", printf_percent},
+{"i", printf_integer},
+{"d", printf_decimal},
+{"b", printf_binary},
+{"u", printf_unsigned},
+{"o", printf_octal},
+{"x", printf_hex_lower},
+{"X", printf_hex_upper},
+{NULL, NULL},
+};
 
-	if (format == NULL)
-		return (-1);
+va_list list;
 
-	va_start(list, format);
+if (format == NULL)
+return (-1);
 
-	for (i = 0; format && format[i] != '\0'; i++)
-	{
-		if (format[i] != '%')
-		{
-			buffer[buff_ind++] = format[i];
-			if (buff_ind == BUFF_SIZE)
-				print_buffer(buffer, &buff_ind);
-			/* write(1, &format[i], 1);*/
-			printed_chars++;
-		}
-		else
-		{
-			print_buffer(buffer, &buff_ind);
-			flags = get_flags(format, &i);
-			width = get_width(format, &i, list);
-			precision = get_precision(format, &i, list);
-			size = get_size(format, &i);
-			++i;
-			printed = handle_print(format, &i, list, buffer,
-				flags, width, precision, size);
-			if (printed == -1)
-				return (-1);
-			printed_chars += printed;
-		}
-	}
+va_start(list, format);
 
-	print_buffer(buffer, &buff_ind);
-
-	va_end(list);
-
-	return (printed_chars);
-}
-
-/**
- * print_buffer - Prints the contents of the buffer if it exist
- * @buffer: Array of chars
- * @buff_ind: Index at which to add next char, represents the length.
- */
-void print_buffer(char buffer[], int *buff_ind)
-{
-	if (*buff_ind > 0)
-		write(1, &buffer[0], *buff_ind);
-
-	*buff_ind = 0;
+print_count = selector(format, func, list);
+va_end(list);
+return (print_count);
 }
